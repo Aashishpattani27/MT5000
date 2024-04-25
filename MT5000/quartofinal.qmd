@@ -1,0 +1,92 @@
+---
+title: "UNICEF Data Analysis Report"
+execute:
+ echo: false
+ warning: false
+ message: false
+---
+
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+```
+
+
+
+```{r}
+unicef_indicator <- read.csv("C:/Users/Aashish/Downloads/unicef_indicator_1.csv")
+unicef_metadata <- read.csv("C:/Users/Aashish/Downloads/unicef_metadata.csv")
+```
+
+```{r}
+merged_data <- merge(unicef_indicator, unicef_metadata, by = c("country", "alpha_2_code", "alpha_3_code", "numeric_code"))
+```
+
+```{r}
+world_map <- map_data("world")
+```
+
+```{r}
+merged_data$year <- as.factor(merged_data$year)
+```
+
+```{r}
+filtered_data <- merged_data %>%
+  select(country, Population..total)
+
+```
+
+```{r}
+merged_data <- map_data("world") %>%
+  left_join(filtered_data, by = c("region" = "country"))
+```
+
+```{r}
+ggplot(merged_data, aes(x = long, y = lat, group = group, fill = Population..total)) +
+  geom_polygon(color = "black") +
+  scale_fill_viridis_c(option = "magma", name = "Population (Total)") +
+  labs(title = "World Map Chart with Total Population") +
+  theme_minimal()
+```
+
+The World Map: The world guide diagram envisions key financial markers across various nations, giving a complete outline of worldwide patterns and incongruities. We are able to plot on the map variables such as life expectancy, GDP per capita, and population density by utilizing data from the supplied dataset. This perception recognizes districts with critical varieties in the chose pointers, for example, big time salary nations in North America and Europe versus lower-pay nations in Africa and Asia. By shading nations in view of the pointer esteems, the world guide diagram works with examinations and bits of knowledge into worldwide advancement designs, empowering partners to focus on regions for mediation and strategy arranging.
+
+```{r}
+merged_data <- merge(unicef_indicator, unicef_metadata, by = c("country", "alpha_2_code", "alpha_3_code", "numeric_code"))
+```
+
+```{r}
+top_10_countries <- merged_data %>%
+  group_by(country) %>%
+  summarize(total_population = sum(Population..total)) %>%
+  top_n(10, total_population) %>%
+  arrange(desc(total_population))
+```
+
+```{r population-chart, fig.width=10, fig.height=6}
+population_chart <- ggplot(top_10_countries, aes(x = reorder(country, total_population), y = total_population)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Top 10 Countries by Population", x = "Country", y = "Population") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+population_chart
+```
+Bar graph: The bar graph is a successful instrument for contrasting all out information, making it reasonable for dissecting nation level measurements across different financial aspects. We can use the dataset to create bar charts to show indicators for different countries like population size, GDP per capita, and military spending. For instance, plotting the main 10 nations by populace gives bits of knowledge into segment patterns and urbanization rates, while contrasting Gross domestic product per capita features abberations in financial turn of events. The bar chart makes it easy to see outliers, trends, and differences between countries by arranging them along the x-axis and representing indicator values with vertical bars.
+```{r scatter-plot, fig.width=10, fig.height=6}
+scatter_plot <- ggplot(merged_data, aes(x = GDP.per.capita..constant.2015.US.., y = Life.expectancy.at.birth..total..years.)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "GDP per Capita vs. Life Expectancy", x = "GDP per Capita (constant 2015 USD)", y = "Life Expectancy (years)")
+scatter_plot
+```
+Scatterplot with a Linear Regression Line:Correlation and predictive modeling can be better understood with the help of a scatterplot with a linear regression line that examines the connections between two continuous variables. We can examine correlations between variables like GDP per capita and life expectancy or inflation and GDP growth rate by creating scatterplots using the dataset. The regression line depicts the overall trend or pattern in the data in the scatterplot, which depicts individual data points as dots on a graph. For example, a positive connection between's Gross domestic product per capita and future recommends that higher-pay nations will quite often have longer futures. By examining the incline and course of the relapse line, we can survey the strength and bearing of the relationship, illuminating approach choices and intercessions to improve financial results.
+```{r}
+merged_data$year <- as.numeric(as.character(merged_data$year))
+time_series <- ggplot(merged_data, aes(x = year, y = Inflation..consumer.prices..annual..., group = country)) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(min(merged_data$year), max(merged_data$year), by = 5)) +
+  labs(title = "Inflation Over Time", x = "Year", y = "Inflation (annual %)")
+time_series
+```
+Time-Series Chart:The time-series diagram tracks changes in key markers after some time, giving experiences into worldly patterns, occasional varieties, and long haul designs. We can use the dataset to create time-series charts to show indicators like inflation rates, GDP per capita, and population growth over time. This visualization aids in the identification of data trends and fluctuations, such as shifts in demographics, policy interventions' effects, economic booms and busts, and so on. For instance, plotting Gross domestic product per capita over the long run uncovers nations' monetary directions and their reactions to outer shocks or inner changes. Stakeholders are able to foresee developments in the future, anticipate obstacles, and develop policies to encourage sustainable socioeconomic development by analyzing historical trends.
